@@ -6,7 +6,7 @@ pipeline {
         SONARQUBE_CRED = "sonarqube-cred"
         GITHUB_CRED = "github-cred"
         KUBERNETES_CRED = "kubernetes-cred"
-        SONARQUBE_HOST = "http://192.168.103.2:32000" // replace with your SonarQube URL
+        SONARQUBE_HOST = "http://192.168.103.2:32000"
     }
 
     stages {
@@ -25,15 +25,20 @@ pipeline {
 
         stage("SonarQube Static Code Analysis") {
             steps {
-                echo "Running SonarQube analysis..."
-                withCredentials([string(credentialsId: "${SONARQUBE_CRED}", variable: 'SONARQUBE_TOKEN')]) {
-                    sh """
-                        sonar-scanner \
-                        -Dsonar.projectKey=asto \
-                        -Dsonar.sources=. \
-                        -Dsonar.host.url=${SONARQUBE_HOST} \
-                        -Dsonar.login=${SONARQUBE_TOKEN}
-                    """
+                script {
+                    echo "Running SonarQube analysis..."
+
+                    def scannerHome = tool 'sonar-scanner' // MUST match Jenkins Tools name
+
+                    withSonarQubeEnv(credentialsId: "${SONARQUBE_CRED}") {
+                        sh """
+                            ${scannerHome}/bin/sonar-scanner \
+                            -Dsonar.projectKey=asto \
+                            -Dsonar.sources=. \
+                            -Dsonar.host.url=${SONARQUBE_HOST} \
+                            -Dsonar.login=${SONARQUBE_TOKEN}
+                        """
+                    }
                 }
             }
             post {
