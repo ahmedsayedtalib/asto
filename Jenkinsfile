@@ -6,7 +6,7 @@ pipeline {
         SONARQUBE_CRED = "sonarqube-cred"
         GITHUB_CRED = "github-cred"
         KUBERNETES_CRED = "kubernetes-cred"
-        SONARQUBE_HOST = "http://192.168.103.2:32000"
+        SONARQUBE_HOST = "http://192.168.103.2:32300"
     }
 
     stages {
