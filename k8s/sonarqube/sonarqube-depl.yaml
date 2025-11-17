@@ -1,0 +1,107 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sonarqube
+  labels:
+    app: sonar-qube
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sonar-qube
+  template:
+    metadata:
+      labels:
+        app: sonar-qube
+    spec:
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000
+      containers:
+      - name: sonarqube
+        image: sonarqube:community
+        env:
+        - name: SONARQUBE_JAVAOPTS
+          value: "-Xms1g -Xmx3g"
+        - name: SONAR_JDBC_URL
+          value: jdbc:postgresql://postgres-sonar-service:5432/sonardb
+        - name: SONAR_JDBC_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: postgres-sonar-secret
+              key: POSTGRES_USER
+        - name: SONAR_JDBC_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-sonar-secret
+              key: POSTGRES_PASSWORD
+        volumeMounts:
+        - name: sonarqube-data
+          mountPath: /opt/sonarqube/data
+        - name: sonarqube-logs
+          mountPath: /opt/sonarqube/logs
+        - name: sonarqube-extensions
+          mountPath: /opt/sonarqube/extensions
+      volumes:
+      - name: sonarqube-data
+        persistentVolumeClaim:
+          claimName: sonarqube-data-pvc
+      - name: sonarqube-logs
+        persistentVolumeClaim:
+          claimName: sonarqube-logs-pvc
+      - name: sonarqube-extensions
+        persistentVolumeClaim:
+          claimName: sonarqube-extensions-pvc
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sonarqube-data-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sonarqube-logs-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sonarqube-extensions-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sonarqube-service
+  labels:
+    app: sonar-qube
+spec:
+  type: NodePort
+  selector:
+    app: sonar-qube
+  ports:
+  - protocol: TCP
+    port: 9000
+    targetPort: 9000
+    nodePort: 32000
