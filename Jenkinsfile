@@ -36,7 +36,7 @@ pipeline {
                             -Dsonar.projectKey=asto \
                             -Dsonar.sources=. \
                             -Dsonar.host.url=${SONARQUBE_HOST} \
-                            -Dsonar.login=$SONAR_AUTH_TOKEN
+                            -Dsonar.token=$SONAR_AUTH_TOKEN
 
                         """
                     }
