@@ -7,6 +7,6 @@ flake8==7.1.0
 mypy==1.5.1
 bandit==1.8.2
 safety==3.7.0
-pytest-benchmark==4.1.0
+pytest-benchmark==5.2.3
 locust==3.10.1
 hypothesis==7.90.0
